@@ -3,168 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prism Logistics - TMS Dashboard</title>
+    <title>Prism Logistics - TMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            900: '#14532d',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans">
-    <div id="root"></div>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
 
-    <script type="text/babel">
+    <!-- Top Navigation -->
+    <nav class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-white text-xl">P</div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight tracking-wide">PRISM LOGISTICS</h1>
+                <p class="text-xs text-emerald-200">Transport Management System</p>
+            </div>
+        </div>
+        <span class="bg-emerald-800 text-emerald-200 text-xs px-3 py-1 rounded-full border border-emerald-700 font-semibold">
+            System Live
+        </span>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto p-6 space-y-8">
+        
+        <!-- Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Active Fleet</p>
+                <h3 class="text-3xl font-extrabold text-slate-900 mt-2">12 Vehicles</h3>
+                <p class="text-emerald-600 text-xs font-medium mt-1">100% Operational</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Active Trips</p>
+                <h3 class="text-3xl font-extrabold text-slate-900 mt-2">5 Trips</h3>
+                <p class="text-amber-600 text-xs font-medium mt-1">Cold Chain En-Route</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Fuel Expense Logged</p>
+                <h3 class="text-3xl font-extrabold text-slate-900 mt-2">PKR 450,000</h3>
+                <p class="text-emerald-600 text-xs font-medium mt-1">AI Verified Receipts</p>
+            </div>
+        </div>
+
+        <!-- AI Receipt Scanner -->
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+            <div>
+                <h3 class="text-xl font-bold text-slate-900">⚡ AI Receipt & Fuel Log Scanner</h3>
+                <p class="text-sm text-slate-500">Fuel receipt ya expense bill ki photo upload karein. Gemini AI auto-extract karega.</p>
+            </div>
+
+            <div class="border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-8 rounded-2xl text-center space-y-4">
+                <input type="file" id="receiptInput" accept="image/*" class="hidden" onchange="uploadReceipt()" />
+                <label for="receiptInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl inline-block transition shadow-md">
+                    Select Receipt Image
+                </label>
+                <p id="statusText" class="text-xs text-slate-500">Supported formats: JPG, PNG, WEBP</p>
+            </div>
+
+            <div id="outputBox" class="hidden bg-slate-900 text-emerald-400 p-6 rounded-2xl font-mono text-xs overflow-x-auto">
+                <p class="text-slate-400 font-sans font-bold mb-2">Extraction Output:</p>
+                <pre id="jsonOutput"></pre>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script -->
+    <script>
         const BACKEND_URL = "https://prism-logistics-tms-backend-833f-ek7cfytt4-prism-logistics.vercel.app";
 
-        function App() {
-            const [activeTab, setActiveTab] = React.useState('dashboard');
-            const [uploading, setUploading] = React.useState(false);
-            const [scanResult, setScanResult] = React.useState(null);
+        async function uploadReceipt() {
+            const input = document.getElementById('receiptInput');
+            const statusText = document.getElementById('statusText');
+            const outputBox = document.getElementById('outputBox');
+            const jsonOutput = document.getElementById('jsonOutput');
 
-            const handleFileUpload = async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
+            if (!input.files || input.files.length === 0) return;
 
-                setUploading(true);
-                setScanResult(null);
+            const file = input.files[0];
+            statusText.innerText = "Processing with Gemini AI...";
+            statusText.className = "text-xs font-semibold text-emerald-600";
 
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('trip_id', 'demo-trip-id');
+            const formData = new FormData();
+            formData.append('file', file);
 
-                try {
-                    const res = await fetch(`${BACKEND_URL}/api/expenses/scan-receipt`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await res.json();
-                    setScanResult(data);
-                } catch (err) {
-                    alert('Receipt scan karne mein masla aaya. Check backend API logs.');
-                } finally {
-                    setUploading(false);
-                }
-            };
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/expenses/scan-receipt`, {
+                    method: 'POST',
+                    body: formData
+                });
 
-            return (
-                <div class="min-h-screen flex flex-col md:flex-row">
-                    <!-- Sidebar -->
-                    <aside class="w-full md:w-64 bg-brand-900 text-white p-6 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center space-x-3 mb-8">
-                                <div class="w-10 h-10 bg-brand-500 rounded-lg flex items-center justify-center font-bold text-white text-xl">P</div>
-                                <div>
-                                    <h1 class="font-bold text-lg leading-tight">PRISM</h1>
-                                    <p class="text-xs text-brand-100 opacity-80">LOGISTICS TMS</p>
-                                </div>
-                            </div>
-                            <nav class="space-y-2">
-                                {['dashboard', 'trips', 'fleet', 'ai-ocr'].map(tab => (
-                                    <button 
-                                        key={tab}
-                                        onClick={() => setActiveTab(tab)}
-                                        class={`w-full text-left px-4 py-3 rounded-xl capitalize font-medium transition ${activeTab === tab ? 'bg-brand-600 text-white shadow-lg shadow-brand-900/50' : 'text-brand-100 hover:bg-brand-700/50'}`}
-                                    >
-                                        {tab === 'ai-ocr' ? '⚡ AI Receipt Scan' : tab}
-                                    </button>
-                                ))}
-                            </nav>
-                        </div>
-                        <div class="text-xs text-brand-100/60 pt-6 border-t border-brand-700">
-                            Prism Logistics © 2026
-                        </div>
-                    </aside>
-
-                    <!-- Main Content Area -->
-                    <main class="flex-1 p-6 md:p-10 overflow-y-auto">
-                        <!-- Top Header -->
-                        <header class="flex justify-between items-center mb-8 pb-4 border-b border-slate-200">
-                            <div>
-                                <h2 class="text-2xl font-bold text-slate-900 capitalize">{activeTab} Overview</h2>
-                                <p class="text-slate-500 text-sm">Welcome to Prism Logistics Fleet Control</p>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-100 text-brand-700">
-                                    System Active
-                                </span>
-                            </div>
-                        </header>
-
-                        <!-- Dashboard View -->
-                        {activeTab === 'dashboard' && (
-                            <div class="space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                        <p class="text-slate-500 text-sm font-medium">Total Active Vehicles</p>
-                                        <h3 class="text-3xl font-bold text-slate-900 mt-2">12</h3>
-                                        <span class="text-brand-600 text-xs font-semibold mt-1 inline-block">100% Operational</span>
-                                    </div>
-                                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                        <p class="text-slate-500 text-sm font-medium">In-Transit Trips</p>
-                                        <h3 class="text-3xl font-bold text-slate-900 mt-2">5</h3>
-                                        <span class="text-amber-600 text-xs font-semibold mt-1 inline-block">Cold Chain En-Route</span>
-                                    </div>
-                                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                        <p class="text-slate-500 text-sm font-medium">Monthly Fuel Expenses</p>
-                                        <h3 class="text-3xl font-bold text-slate-900 mt-2">PKR 450,000</h3>
-                                        <span class="text-brand-600 text-xs font-semibold mt-1 inline-block">AI Logged</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        <!-- AI Receipt OCR Scanner View -->
-                        {activeTab === 'ai-ocr' && (
-                            <div class="max-w-2xl bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                                <div>
-                                    <h3 class="text-lg font-bold text-slate-900">AI Receipt & Fuel Log Scanner</h3>
-                                    <p class="text-sm text-slate-500">Fuel receipt ya expense bill ki photo upload karein. Google AI Studio (Gemini) auto-data extract karega.</p>
-                                </div>
-
-                                <div class="border-2 border-dashed border-brand-500/30 bg-brand-50/50 p-8 rounded-2xl text-center">
-                                    <input 
-                                        type="file" 
-                                        accept="image/*" 
-                                        onChange={handleFileUpload} 
-                                        id="fileInput" 
-                                        class="hidden" 
-                                    />
-                                    <label htmlFor="fileInput" class="cursor-pointer bg-brand-600 hover:bg-brand-700 text-white px-6 py-3 rounded-xl text-sm font-semibold inline-block transition">
-                                        {uploading ? 'Processing with AI...' : 'Upload Receipt Photo'}
-                                    </label>
-                                </div>
-
-                                {scanResult && (
-                                    <div class="bg-slate-900 text-emerald-400 p-6 rounded-2xl font-mono text-xs overflow-x-auto">
-                                        <p class="text-slate-400 mb-2 font-sans font-bold text-sm">Extracted Data Output:</p>
-                                        <pre>{JSON.stringify(scanResult, null, 2)}</pre>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </main>
-                </div>
-            );
+                const data = await res.json();
+                outputBox.classList.remove('hidden');
+                jsonOutput.innerText = JSON.stringify(data, null, 2);
+                statusText.innerText = "Scan Completed Successfully!";
+            } catch (err) {
+                statusText.innerText = "Error scanning receipt. Please check API connection.";
+                statusText.className = "text-xs font-semibold text-rose-600";
+            }
         }
-
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
