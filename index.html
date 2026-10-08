@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prism Logistics - TMS</title>
+    <title>Prism Logistics - Transport Management System</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
@@ -14,91 +14,316 @@
             <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-white text-xl">P</div>
             <div>
                 <h1 class="font-bold text-lg leading-tight tracking-wide">PRISM LOGISTICS</h1>
-                <p class="text-xs text-emerald-200">Transport Management System</p>
+                <p class="text-xs text-emerald-200">TMS & Route Assistant</p>
             </div>
         </div>
-        <span class="bg-emerald-800 text-emerald-200 text-xs px-3 py-1 rounded-full border border-emerald-700 font-semibold">
-            System Live
-        </span>
+        <div class="flex items-center space-x-2">
+            <button onclick="switchView('manager')" id="btnManager" class="bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg border border-emerald-600 font-semibold transition">
+                Manager Dashboard
+            </button>
+            <button onclick="switchView('driver')" id="btnDriver" class="bg-emerald-800 text-emerald-200 hover:text-white text-xs px-3 py-1.5 rounded-lg border border-emerald-700 font-semibold transition">
+                📱 Driver Portal
+            </button>
+        </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="max-w-6xl mx-auto p-6 space-y-8">
+    <!-- MANAGER DASHBOARD VIEW -->
+    <div id="managerView" class="max-w-6xl mx-auto p-6 space-y-8">
         
-        <!-- Metrics -->
+        <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Active Fleet</p>
-                <h3 class="text-3xl font-extrabold text-slate-900 mt-2">12 Vehicles</h3>
+                <p class="text-slate-500 text-xs font-semibold uppercase">Total Active Fleet</p>
+                <h3 class="text-3xl font-bold text-slate-900 mt-2">12 Vehicles</h3>
                 <p class="text-emerald-600 text-xs font-medium mt-1">100% Operational</p>
             </div>
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Active Trips</p>
-                <h3 class="text-3xl font-extrabold text-slate-900 mt-2">5 Trips</h3>
-                <p class="text-amber-600 text-xs font-medium mt-1">Cold Chain En-Route</p>
+                <p class="text-slate-500 text-xs font-semibold uppercase">Active Trips</p>
+                <h3 class="text-3xl font-bold text-slate-900 mt-2">5 En-Route</h3>
+                <p class="text-amber-600 text-xs font-medium mt-1">Cold Chain Active</p>
             </div>
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Fuel Expense Logged</p>
-                <h3 class="text-3xl font-extrabold text-slate-900 mt-2">PKR 450,000</h3>
-                <p class="text-emerald-600 text-xs font-medium mt-1">AI Verified Receipts</p>
+                <p class="text-slate-500 text-xs font-semibold uppercase">Expenses Logged</p>
+                <h3 class="text-3xl font-bold text-slate-900 mt-2">PKR 450,000</h3>
+                <p class="text-emerald-600 text-xs font-medium mt-1">AI Receipt & Odo Verified</p>
             </div>
         </div>
 
-        <!-- AI Receipt Scanner -->
+        <!-- Forms: Fleet & Trip Management -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Vehicle Management -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                    <span>🚛</span> <span>Add New Vehicle</span>
+                </h3>
+                <form id="vehicleForm" onsubmit="handleAddVehicle(event)" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 block mb-1">Vehicle Number</label>
+                        <input type="text" id="vehReg" required placeholder="e.g. TKN-892" class="w-full px-3 py-2 border rounded-xl text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 block mb-1">Type</label>
+                            <select id="vehType" class="w-full px-3 py-2 border rounded-xl text-sm">
+                                <option>Cold Chain Reefer</option>
+                                <option>Flatbed Truck</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 block mb-1">Capacity (Tons)</label>
+                            <input type="number" id="vehCap" placeholder="10" class="w-full px-3 py-2 border rounded-xl text-sm">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-xl transition text-sm">
+                        Register Vehicle
+                    </button>
+                    <p id="vehStatus" class="text-xs text-emerald-600 font-semibold"></p>
+                </form>
+            </div>
+
+            <!-- Driver Onboarding -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                    <span>👨‍✈️</span> <span>Driver Onboarding</span>
+                </h3>
+                <form id="driverForm" onsubmit="handleAddDriver(event)" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 block mb-1">Driver Name</label>
+                        <input type="text" id="drvName" required placeholder="e.g. Tariq Mehmood" class="w-full px-3 py-2 border rounded-xl text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 block mb-1">CNIC</label>
+                            <input type="text" id="drvCnic" placeholder="42101-XXXXXXX-X" class="w-full px-3 py-2 border rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 block mb-1">Phone</label>
+                            <input type="tel" id="drvPhone" placeholder="0300-1234567" class="w-full px-3 py-2 border rounded-xl text-sm">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-xl transition text-sm">
+                        Save Driver
+                    </button>
+                    <p id="drvStatus" class="text-xs text-emerald-600 font-semibold"></p>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Manager Scan Logs -->
         <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-            <div>
-                <h3 class="text-xl font-bold text-slate-900">⚡ AI Receipt & Fuel Log Scanner</h3>
-                <p class="text-sm text-slate-500">Fuel receipt ya expense bill ki photo upload karein. Gemini AI auto-extract karega.</p>
-            </div>
-
+            <h3 class="text-xl font-bold text-slate-900">⚡ Document & Receipt AI Verification</h3>
             <div class="border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-8 rounded-2xl text-center space-y-4">
-                <input type="file" id="receiptInput" accept="image/*" class="hidden" onchange="uploadReceipt()" />
-                <label for="receiptInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl inline-block transition shadow-md">
-                    Select Receipt Image
+                <input type="file" id="managerInput" accept="image/*" class="hidden" onchange="uploadScan('managerInput', 'mgrStatus', 'mgrOutput', 'mgrJson')" />
+                <label for="managerInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl inline-block transition shadow-md">
+                    Upload Fuel Bill or Odometer Photo
                 </label>
-                <p id="statusText" class="text-xs text-slate-500">Supported formats: JPG, PNG, WEBP</p>
+                <p id="mgrStatus" class="text-xs text-slate-500">Supports: JPG, PNG, WEBP</p>
             </div>
-
-            <div id="outputBox" class="hidden bg-slate-900 text-emerald-400 p-6 rounded-2xl font-mono text-xs overflow-x-auto">
-                <p class="text-slate-400 font-sans font-bold mb-2">Extraction Output:</p>
-                <pre id="jsonOutput"></pre>
+            <div id="mgrOutput" class="hidden bg-slate-900 text-emerald-400 p-6 rounded-2xl font-mono text-xs overflow-x-auto">
+                <pre id="mgrJson"></pre>
             </div>
         </div>
 
     </div>
 
-    <!-- Script -->
+    <!-- DRIVER MOBILE PORTAL VIEW -->
+    <div id="driverView" class="hidden max-w-md mx-auto p-4 space-y-6">
+        
+        <!-- Driver Header -->
+        <div class="bg-emerald-900 text-white p-6 rounded-3xl space-y-2 text-center shadow-lg">
+            <span class="bg-emerald-800 text-emerald-200 text-xs px-3 py-1 rounded-full border border-emerald-700 font-semibold">
+                Route Execution Portal
+            </span>
+            <h2 class="text-2xl font-bold mt-2">Driver On-Road Assistant</h2>
+            <p class="text-xs text-emerald-300">Trip Start, Meter Reading & Fuel Logging</p>
+        </div>
+
+        <!-- Driver Action Tabs -->
+        <div class="bg-white p-2 rounded-2xl border border-slate-200 flex justify-between gap-1 shadow-sm text-xs font-bold">
+            <button onclick="setDriverTab('start')" id="tabStart" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white transition text-center">
+                1. Start Trip
+            </button>
+            <button onclick="setDriverTab('fuel')" id="tabFuel" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-600 transition text-center">
+                2. Add Fuel
+            </button>
+            <button onclick="setDriverTab('end')" id="tabEnd" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-600 transition text-center">
+                3. End Trip
+            </button>
+        </div>
+
+        <!-- TRIP START PANEL -->
+        <div id="panelStart" class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-bold text-slate-900 text-base">🚀 Start New Journey</h3>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">Select Assigned Vehicle</label>
+                    <select class="w-full px-3 py-2.5 border rounded-xl text-sm bg-slate-50">
+                        <option>Reefer TKN-892 (Karachi to Lahore)</option>
+                        <option>Flatbed KHI-443 (Karachi to Islamabad)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">Starting Odometer Reading (KM)</label>
+                    <input type="number" id="startOdo" placeholder="e.g. 145200" class="w-full px-3 py-2.5 border rounded-xl text-sm">
+                </div>
+            </div>
+
+            <div class="border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-6 rounded-2xl text-center space-y-3">
+                <p class="text-xs text-slate-600 font-medium">📷 Photo of Start Odometer Meter</p>
+                <input type="file" id="startOdoInput" accept="image/*" class="hidden" onchange="uploadScan('startOdoInput', 'startStatus', 'startOutput', 'startJson')" />
+                <label for="startOdoInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl inline-block text-xs">
+                    Scan Start Meter
+                </label>
+                <p id="startStatus" class="text-xs text-slate-500">Auto-Extract KM with AI</p>
+            </div>
+
+            <div id="startOutput" class="hidden bg-slate-900 text-emerald-400 p-4 rounded-xl font-mono text-xs">
+                <pre id="startJson"></pre>
+            </div>
+
+            <button onclick="confirmTripStart()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-2xl shadow-md text-sm">
+                Confirm & Start Trip
+            </button>
+        </div>
+
+        <!-- FUEL LOG PANEL -->
+        <div id="panelFuel" class="hidden bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-bold text-slate-900 text-base">⛽ Fuel Receipt Upload</h3>
+            
+            <div class="border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-6 rounded-2xl text-center space-y-3">
+                <p class="text-xs text-slate-600 font-medium">📷 Take Photo of Petrol Pump Bill</p>
+                <input type="file" id="fuelInput" accept="image/*" class="hidden" onchange="uploadScan('fuelInput', 'fuelStatus', 'fuelOutput', 'fuelJson')" />
+                <label for="fuelInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl inline-block text-xs">
+                    Upload Fuel Bill
+                </label>
+                <p id="fuelStatus" class="text-xs text-slate-500">Auto Extracts Amount & Liters</p>
+            </div>
+
+            <div id="fuelOutput" class="hidden bg-slate-900 text-emerald-400 p-4 rounded-xl font-mono text-xs">
+                <pre id="fuelJson"></pre>
+            </div>
+        </div>
+
+        <!-- TRIP END PANEL -->
+        <div id="panelEnd" class="hidden bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-bold text-slate-900 text-base">🏁 Complete & End Trip</h3>
+            
+            <div>
+                <label class="text-xs font-semibold text-slate-600 block mb-1">Ending Odometer Reading (KM)</label>
+                <input type="number" id="endOdo" placeholder="e.g. 146450" class="w-full px-3 py-2.5 border rounded-xl text-sm">
+            </div>
+
+            <div class="border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-6 rounded-2xl text-center space-y-3">
+                <p class="text-xs text-slate-600 font-medium">📷 Photo of Ending Odometer Meter</p>
+                <input type="file" id="endOdoInput" accept="image/*" class="hidden" onchange="uploadScan('endOdoInput', 'endStatus', 'endOutput', 'endJson')" />
+                <label for="endOdoInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl inline-block text-xs">
+                    Scan Final Meter
+                </label>
+                <p id="endStatus" class="text-xs text-slate-500">Calculates Total Route Distance</p>
+            </div>
+
+            <div id="endOutput" class="hidden bg-slate-900 text-emerald-400 p-4 rounded-xl font-mono text-xs">
+                <pre id="endJson"></pre>
+            </div>
+
+            <button onclick="confirmTripEnd()" class="w-full bg-slate-900 text-white font-bold py-3 rounded-2xl shadow-md text-sm">
+                Close Trip & Calculate Mileage
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Script Section -->
     <script>
         const BACKEND_URL = "https://prism-logistics-tms-backend-833f-ek7cfytt4-prism-logistics.vercel.app";
 
-        async function uploadReceipt() {
-            const input = document.getElementById('receiptInput');
-            const statusText = document.getElementById('statusText');
-            const outputBox = document.getElementById('outputBox');
-            const jsonOutput = document.getElementById('jsonOutput');
+        function switchView(view) {
+            const mgr = document.getElementById('managerView');
+            const drv = document.getElementById('driverView');
+            if (view === 'driver') {
+                mgr.classList.add('hidden');
+                drv.classList.remove('hidden');
+            } else {
+                drv.classList.add('hidden');
+                mgr.classList.remove('hidden');
+            }
+        }
+
+        function setDriverTab(tab) {
+            const pStart = document.getElementById('panelStart');
+            const pFuel = document.getElementById('panelFuel');
+            const pEnd = document.getElementById('panelEnd');
+
+            const tStart = document.getElementById('tabStart');
+            const tFuel = document.getElementById('tabFuel');
+            const tEnd = document.getElementById('tabEnd');
+
+            [pStart, pFuel, pEnd].forEach(p => p.classList.add('hidden'));
+            [tStart, tFuel, tEnd].forEach(t => t.className = "flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-600 transition text-center");
+
+            if (tab === 'start') {
+                pStart.classList.remove('hidden');
+                tStart.className = "flex-1 py-2.5 rounded-xl bg-emerald-600 text-white transition text-center font-bold";
+            } else if (tab === 'fuel') {
+                pFuel.classList.remove('hidden');
+                tFuel.className = "flex-1 py-2.5 rounded-xl bg-emerald-600 text-white transition text-center font-bold";
+            } else if (tab === 'end') {
+                pEnd.classList.remove('hidden');
+                tEnd.className = "flex-1 py-2.5 rounded-xl bg-emerald-600 text-white transition text-center font-bold";
+            }
+        }
+
+        function handleAddVehicle(e) {
+            e.preventDefault();
+            document.getElementById('vehStatus').innerText = "Vehicle Added to Fleet!";
+            document.getElementById('vehicleForm').reset();
+        }
+
+        function handleAddDriver(e) {
+            e.preventDefault();
+            document.getElementById('drvStatus').innerText = "Driver Profile Created!";
+            document.getElementById('driverForm').reset();
+        }
+
+        function confirmTripStart() {
+            alert("Trip Started Successfully! Driver can now log fuel en-route.");
+            setDriverTab('fuel');
+        }
+
+        function confirmTripEnd() {
+            alert("Trip Closed! Total Distance and Fuel Efficiency calculated successfully.");
+            setDriverTab('start');
+        }
+
+        async function uploadScan(inputId, statusId, outputId, jsonId) {
+            const input = document.getElementById(inputId);
+            const status = document.getElementById(statusId);
+            const output = document.getElementById(outputId);
+            const json = document.getElementById(jsonId);
 
             if (!input.files || input.files.length === 0) return;
 
-            const file = input.files[0];
-            statusText.innerText = "Processing with Gemini AI...";
-            statusText.className = "text-xs font-semibold text-emerald-600";
+            status.innerText = "Gemini AI processing image...";
+            status.className = "text-xs font-semibold text-emerald-600";
 
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', input.files[0]);
 
             try {
                 const res = await fetch(`${BACKEND_URL}/api/expenses/scan-receipt`, {
                     method: 'POST',
                     body: formData
                 });
-
                 const data = await res.json();
-                outputBox.classList.remove('hidden');
-                jsonOutput.innerText = JSON.stringify(data, null, 2);
-                statusText.innerText = "Scan Completed Successfully!";
+                output.classList.remove('hidden');
+                json.innerText = JSON.stringify(data, null, 2);
+                status.innerText = "Processing Complete!";
             } catch (err) {
-                statusText.innerText = "Error scanning receipt. Please check API connection.";
-                statusText.className = "text-xs font-semibold text-rose-600";
+                status.innerText = "Scan failed - check backend.";
+                status.className = "text-xs font-semibold text-rose-600";
             }
         }
     </script>
