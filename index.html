@@ -329,3 +329,52 @@
     </script>
 </body>
 </html>
+const BACKEND_URL = "Aapke_FastAPI_Backend_URL_Yahan_Aayegi"; // (e.g. Vercel backend URL or local URL)
+
+        async function handleAddCustomer(e) {
+            e.preventDefault();
+            const name = document.getElementById('custName').value;
+            const phone = document.getElementById('custPhone').value;
+            const billing = document.getElementById('custBilling').value;
+
+            const formData = new FormData();
+            formData.append('client_name', name);
+            formData.append('phone', phone);
+            formData.append('billing_type', billing);
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/customers/add`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                document.getElementById('custStatus').innerText = `Customer '${name}' saved to Google Sheet!`;
+                document.getElementById('customerForm').reset();
+            } catch (err) {
+                document.getElementById('custStatus').innerText = "Error syncing with backend.";
+            }
+        }
+
+        async function handleAddVendor(e) {
+            e.preventDefault();
+            const name = document.getElementById('vendName').value;
+            const veh = document.getElementById('vendVeh').value;
+            const fuel = document.getElementById('vendFuel').value;
+
+            const formData = new FormData();
+            formData.append('vendor_name', name);
+            formData.append('assigned_vehicle', veh);
+            formData.append('fuel_terms', fuel);
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/vendors/add`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                document.getElementById('vendStatus').innerText = `Vendor '${name}' saved to Google Sheet!`;
+                document.getElementById('vendorForm').reset();
+            } catch (err) {
+                document.getElementById('vendStatus').innerText = "Error syncing with backend.";
+            }
+        }
